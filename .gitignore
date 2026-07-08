@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.sqlite3
+
+# Django
+staticfiles/
+media/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Docker/Postgres
+postgres_data/
+*.log
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Virtual env
+venv/
+env/
+.venv/
+
+# Test/cache
+.pytest_cache/
+.coverage
+htmlcov/
