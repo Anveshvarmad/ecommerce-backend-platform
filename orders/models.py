@@ -11,6 +11,7 @@ from products.models import Product
 class Order(models.Model):
     class Status(models.TextChoices):
         PENDING_PAYMENT = "PENDING_PAYMENT", "Pending Payment"
+        PAYMENT_FAILED = "PAYMENT_FAILED", "Payment Failed"
         PAID = "PAID", "Paid"
         PROCESSING = "PROCESSING", "Processing"
         SHIPPED = "SHIPPED", "Shipped"

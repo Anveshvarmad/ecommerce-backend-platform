@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "products",
     "cart",
     "orders",
+    "payments",
 ]
 
 MIDDLEWARE = [
@@ -113,3 +114,5 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+FAKE_WEBHOOK_SECRET = os.getenv("FAKE_WEBHOOK_SECRET", "local-fake-secret")
