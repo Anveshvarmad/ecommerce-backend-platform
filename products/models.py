@@ -15,6 +15,7 @@ class Category(models.Model):
         indexes = [
             models.Index(fields=["is_active"]),
             models.Index(fields=["slug"]),
+            models.Index(fields=["is_active", "name"], name="cat_active_name_idx"),
         ]
 
     def save(self, *args, **kwargs):
@@ -58,6 +59,10 @@ class Product(models.Model):
             models.Index(fields=["is_active"]),
             models.Index(fields=["created_at"]),
             models.Index(fields=["price"]),
+            models.Index(fields=["is_active", "category", "price"], name="prod_active_cat_price_idx"),
+            models.Index(fields=["is_active", "stock_quantity"], name="prod_active_stock_idx"),
+            models.Index(fields=["is_active", "created_at"], name="prod_active_created_idx"),
+            models.Index(fields=["vendor", "is_active"], name="prod_vendor_active_idx"),
         ]
 
     def save(self, *args, **kwargs):
