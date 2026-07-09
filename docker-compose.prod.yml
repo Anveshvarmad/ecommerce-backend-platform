@@ -1,14 +1,16 @@
 services:
   web:
     build: .
-    container_name: ecommerce_backend_api
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
+    container_name: ecommerce_backend_api_prod
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 60 --access-logfile - --error-logfile -
     ports:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      RUN_MIGRATIONS: "True"
+      COLLECT_STATIC: "True"
+      DEBUG: "False"
     depends_on:
       postgres:
         condition: service_healthy
@@ -23,12 +25,12 @@ services:
 
   celery_worker:
     build: .
-    container_name: ecommerce_celery_worker
+    container_name: ecommerce_celery_worker_prod
     command: celery -A config worker --loglevel=info
-    volumes:
-      - .:/app
     env_file:
       - .env
+    environment:
+      DEBUG: "False"
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,12 +39,12 @@ services:
 
   celery_beat:
     build: .
-    container_name: ecommerce_celery_beat
+    container_name: ecommerce_celery_beat_prod
     command: celery -A config beat --loglevel=info
-    volumes:
-      - .:/app
     env_file:
       - .env
+    environment:
+      DEBUG: "False"
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,15 +55,13 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: ecommerce_postgres
+    container_name: ecommerce_postgres_prod
     environment:
       POSTGRES_DB: ecommerce_db
       POSTGRES_USER: ecommerce_user
       POSTGRES_PASSWORD: ecommerce_password
-    ports:
-      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_prod_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ecommerce_user -d ecommerce_db"]
       interval: 10s
@@ -70,7 +70,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: ecommerce_redis
+    container_name: ecommerce_redis_prod
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -78,4 +78,4 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  postgres_prod_data:
