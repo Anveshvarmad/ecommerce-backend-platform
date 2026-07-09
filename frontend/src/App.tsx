@@ -9,6 +9,10 @@ import { ProductsPage } from "./pages/ProductsPage";
 import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { OrdersPage } from "./pages/OrdersPage";
+import { AdminDashboardPage } from "./pages/AdminDashboardPage";
+import { VendorDashboardPage } from "./pages/VendorDashboardPage";
+import { SupportDashboardPage } from "./pages/SupportDashboardPage";
+import { AuditLogsPage } from "./pages/AuditLogsPage";
 
 export default function App() {
   return (
@@ -44,6 +48,42 @@ export default function App() {
               element={
                 <ProtectedRoute roles={["CUSTOMER"]}>
                   <OrdersPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/vendor"
+              element={
+                <ProtectedRoute roles={["VENDOR"]}>
+                  <VendorDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/support"
+              element={
+                <ProtectedRoute roles={["SUPPORT"]}>
+                  <SupportDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <AdminDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/audit"
+              element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <AuditLogsPage />
                 </ProtectedRoute>
               }
             />

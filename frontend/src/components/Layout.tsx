@@ -32,6 +32,21 @@ export function Layout() {
               </>
             )}
 
+            {user?.role === "VENDOR" && (
+              <Link className="nav-link" to="/vendor">Vendor</Link>
+            )}
+
+            {user?.role === "SUPPORT" && (
+              <Link className="nav-link" to="/support">Support</Link>
+            )}
+
+            {user?.role === "ADMIN" && (
+              <>
+                <Link className="nav-link" to="/admin">Admin</Link>
+                <Link className="nav-link" to="/audit">Audit</Link>
+              </>
+            )}
+
             {!user ? (
               <>
                 <Link className="nav-link" to="/login">Login</Link>

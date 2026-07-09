@@ -397,3 +397,78 @@ button {
     padding: 16px 0;
   }
 }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.dashboard-card {
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(15, 23, 42, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.dashboard-card h3 {
+  margin: 0 0 8px;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dashboard-card strong {
+  display: block;
+  font-size: 30px;
+  letter-spacing: -0.05em;
+}
+
+.chart-card {
+  padding: 20px;
+  margin-bottom: 22px;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.action-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  color: #bfdbfe;
+  font-size: 12px;
+}
+
+.pill.warning {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.24);
+  color: #fde68a;
+}
+
+.pill.danger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.24);
+  color: #fecaca;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid,
+  .admin-layout {
+    grid-template-columns: 1fr;
+  }
+}

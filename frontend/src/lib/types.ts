@@ -24,6 +24,7 @@ export type Product = {
   is_active: boolean;
   image_url: string;
   metadata: Record<string, unknown>;
+  updated_at?: string;
 };
 
 export type Paginated<T> = {
@@ -51,6 +52,8 @@ export type Cart = {
 export type Order = {
   id: number;
   order_number: string;
+  user?: number;
+  user_username?: string;
   status: string;
   subtotal_amount: string;
   tax_amount: string;
@@ -67,4 +70,64 @@ export type Payment = {
   amount: string;
   currency: string;
   order_number: string;
+};
+
+export type AdminSummary = {
+  users: {
+    total: number;
+    customers: number;
+    vendors: number;
+    support: number;
+    admins: number;
+  };
+  catalog: {
+    products: number;
+    active_products: number;
+    low_stock_products: number;
+  };
+  orders: {
+    total: number;
+    by_status: Record<string, number>;
+    gross_revenue: string;
+  };
+  payments: {
+    total: number;
+    by_status: Record<string, number>;
+  };
+  generated_at: string;
+};
+
+export type VendorSummary = {
+  vendor: {
+    id: number;
+    username: string;
+    email: string;
+  };
+  products: {
+    total: number;
+    active: number;
+    low_stock: number;
+  };
+  sales: {
+    sold_line_items: number;
+    paid_line_items: number;
+    units_sold: number;
+    revenue: string;
+  };
+  generated_at: string;
+};
+
+export type AuditLog = {
+  id: number;
+  actor: number | null;
+  actor_username: string | null;
+  action: string;
+  method: string;
+  path: string;
+  status_code: number;
+  resource_type: string;
+  resource_id: string;
+  ip_address: string | null;
+  correlation_id: string;
+  created_at: string;
 };
