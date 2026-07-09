@@ -12,6 +12,7 @@ from users.permissions import IsCustomerRole
 
 from .models import Order, OrderItem
 from .serializers import CheckoutSerializer, OrderSerializer
+from .tasks import send_order_confirmation_task
 
 
 class CheckoutView(APIView):
@@ -123,6 +124,8 @@ class CheckoutView(APIView):
 
         cart.status = Cart.Status.CHECKED_OUT
         cart.save(update_fields=["status", "updated_at"])
+
+        transaction.on_commit(lambda: send_order_confirmation_task.delay(order.id))
 
         response_serializer = OrderSerializer(
             Order.objects.prefetch_related("items").select_related("user").get(id=order.id)

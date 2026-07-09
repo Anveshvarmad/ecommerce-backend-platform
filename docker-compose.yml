@@ -13,6 +13,31 @@ services:
       - postgres
       - redis
 
+  celery_worker:
+    build: .
+    container_name: ecommerce_celery_worker
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+
+  celery_beat:
+    build: .
+    container_name: ecommerce_celery_beat
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+      - celery_worker
+
   postgres:
     image: postgres:16-alpine
     container_name: ecommerce_postgres

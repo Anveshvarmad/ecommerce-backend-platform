@@ -12,6 +12,7 @@ from .serializers import (
     PaymentSerializer,
 )
 from .services import FakePaymentProvider
+from .tasks import send_payment_receipt_task
 
 
 def apply_payment_status(payment, new_status, message="", response_payload=None):
@@ -32,6 +33,7 @@ def apply_payment_status(payment, new_status, message="", response_payload=None)
     if new_status == Payment.Status.SUCCEEDED:
         order.status = Order.Status.PAID
         order.save(update_fields=["status", "updated_at"])
+        transaction.on_commit(lambda: send_payment_receipt_task.delay(payment.id))
 
     elif new_status in [Payment.Status.FAILED, Payment.Status.TIMEOUT]:
         order.status = Order.Status.PAYMENT_FAILED

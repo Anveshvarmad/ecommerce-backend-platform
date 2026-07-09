@@ -116,3 +116,24 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 FAKE_WEBHOOK_SECRET = os.getenv("FAKE_WEBHOOK_SECRET", "local-fake-secret")
+
+# Celery
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://redis:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+
+# Email
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@ecommerce.local")
+
+CELERY_BEAT_SCHEDULE = {
+    "cleanup-abandoned-carts-every-hour": {
+        "task": "cart.tasks.cleanup_abandoned_carts_task",
+        "schedule": 3600.0,
+        "args": (7,),
+    },
+}
+
