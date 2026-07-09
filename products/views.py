@@ -3,6 +3,12 @@ from rest_framework import generics, permissions
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from .cache_utils import (
+    build_catalog_cache_key,
+    get_cached_catalog_response,
+    invalidate_catalog_cache,
+    set_cached_catalog_response,
+)
 from .models import Category, Product
 from .permissions import (
     IsAdminOrReadOnly,
@@ -18,10 +24,54 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class CategoryListCreateView(generics.ListCreateAPIView):
+class CachedListMixin:
+    cache_namespace = "catalog-list"
+
+    def list(self, request, *args, **kwargs):
+        cache_key = build_catalog_cache_key(request, self.cache_namespace)
+        cached_data = get_cached_catalog_response(cache_key)
+
+        if cached_data is not None:
+            return Response(cached_data, headers={"X-Cache": "HIT"})
+
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            response = Response(serializer.data)
+
+        set_cached_catalog_response(cache_key, response.data)
+        response["X-Cache"] = "MISS"
+        return response
+
+
+class CachedRetrieveMixin:
+    cache_namespace = "catalog-detail"
+
+    def retrieve(self, request, *args, **kwargs):
+        cache_key = build_catalog_cache_key(request, self.cache_namespace)
+        cached_data = get_cached_catalog_response(cache_key)
+
+        if cached_data is not None:
+            return Response(cached_data, headers={"X-Cache": "HIT"})
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response = Response(serializer.data)
+        set_cached_catalog_response(cache_key, response.data)
+        response["X-Cache"] = "MISS"
+        return response
+
+
+class CategoryListCreateView(CachedListMixin, generics.ListCreateAPIView):
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
     pagination_class = StandardResultsSetPagination
+    cache_namespace = "category-list"
 
     def get_queryset(self):
         queryset = Category.objects.annotate(product_count=Count("products"))
@@ -38,17 +88,31 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 
         return queryset
 
+    def perform_create(self, serializer):
+        serializer.save()
+        invalidate_catalog_cache()
 
-class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+
+class CategoryDetailView(CachedRetrieveMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.annotate(product_count=Count("products"))
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
+    cache_namespace = "category-detail"
+
+    def perform_update(self, serializer):
+        serializer.save()
+        invalidate_catalog_cache()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        invalidate_catalog_cache()
 
 
-class ProductListCreateView(generics.ListCreateAPIView):
+class ProductListCreateView(CachedListMixin, generics.ListCreateAPIView):
     serializer_class = ProductSerializer
     permission_classes = [IsVendorOrAdminForCreate]
     pagination_class = StandardResultsSetPagination
+    cache_namespace = "product-list"
 
     def get_queryset(self):
         queryset = (
@@ -104,20 +168,27 @@ class ProductListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(vendor=self.request.user)
+        invalidate_catalog_cache()
 
 
-class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ProductDetailView(CachedRetrieveMixin, generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly,
         IsProductOwnerOrAdminOrReadOnly,
     ]
+    cache_namespace = "product-detail"
 
     def get_queryset(self):
         return Product.objects.select_related("vendor", "category")
+
+    def perform_update(self, serializer):
+        serializer.save()
+        invalidate_catalog_cache()
 
     def destroy(self, request, *args, **kwargs):
         product = self.get_object()
         product.is_active = False
         product.save(update_fields=["is_active", "updated_at"])
+        invalidate_catalog_cache()
         return Response({"message": "Product deactivated successfully."})
